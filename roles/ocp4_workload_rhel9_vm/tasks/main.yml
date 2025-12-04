@@ -1,0 +1,11 @@
+---
+# Standard entry point for AgnosticD workload
+- name: Running workload tasks
+  ansible.builtin.import_tasks: workload.yml
+  become: false
+  when: ACTION == "create" or ACTION == "provision"
+
+- name: Running remove workload tasks
+  ansible.builtin.import_tasks: remove_workload.yml
+  become: false
+  when: ACTION == "destroy" or ACTION == "remove"
