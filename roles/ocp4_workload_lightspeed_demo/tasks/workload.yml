@@ -1,0 +1,64 @@
+---
+# ================================
+# RHEL9 VM Deployment
+# ================================
+
+- name: Create namespace for demo VM
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ ocp4_workload_lightspeed_demo_vm_namespace }}"
+        labels:
+          app: lightspeed-demo
+
+- name: Deploy RHEL 9 demo VM
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'vm.yaml.j2') | from_yaml }}"
+
+- name: Wait for VM to be created
+  kubernetes.core.k8s_info:
+    api_version: kubevirt.io/v1
+    kind: VirtualMachine
+    name: "{{ ocp4_workload_lightspeed_demo_vm_name }}"
+    namespace: "{{ ocp4_workload_lightspeed_demo_vm_namespace }}"
+  register: r_vm
+  retries: 30
+  delay: 10
+  until:
+  - r_vm.resources is defined
+  - r_vm.resources | length > 0
+
+- name: Set user info for VM details
+  agnosticd.core.agnosticd_user_info:
+    msg: |
+      RHEL 9 Demo VM deployed successfully:
+        - Namespace: {{ ocp4_workload_lightspeed_demo_vm_namespace }}
+        - VM Name: {{ ocp4_workload_lightspeed_demo_vm_name }}
+        - Username: {{ ocp4_workload_lightspeed_demo_vm_user }}
+        - Password: {{ ocp4_workload_lightspeed_demo_vm_password }}
+        - Resources: {{ ocp4_workload_lightspeed_demo_vm_cpu_cores }} CPU, {{ ocp4_workload_lightspeed_demo_vm_memory }} RAM
+    data:
+      rhel9_vm_namespace: "{{ ocp4_workload_lightspeed_demo_vm_namespace }}"
+      rhel9_vm_name: "{{ ocp4_workload_lightspeed_demo_vm_name }}"
+      rhel9_vm_user: "{{ ocp4_workload_lightspeed_demo_vm_user }}"
+      rhel9_vm_password: "{{ ocp4_workload_lightspeed_demo_vm_password }}"
+
+# ================================
+# RAG Deployment
+# ================================
+
+- name: Deploy RAG integration
+  when: ocp4_workload_lightspeed_demo_enable_rag | bool
+  ansible.builtin.include_tasks: deploy_rag.yml
+
+# ================================
+# Broken Pod Deployment
+# ================================
+
+- name: Create broken pod for demo
+  when: ocp4_workload_lightspeed_demo_create_broken_pod | bool
+  ansible.builtin.include_tasks: deploy_broken_pod.yml

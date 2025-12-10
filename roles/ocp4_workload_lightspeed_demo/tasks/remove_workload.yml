@@ -1,0 +1,48 @@
+---
+# ================================
+# Remove Broken Pod (if created)
+# ================================
+
+- name: Remove broken pod namespace
+  when: ocp4_workload_lightspeed_demo_create_broken_pod | bool
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: Namespace
+    name: "{{ ocp4_workload_lightspeed_demo_broken_pod_namespace }}"
+    wait: true
+    wait_timeout: 120
+
+# ================================
+# Remove RAG Configuration (if created)
+# ================================
+
+- name: Remove RAG configuration from OLSConfig
+  when: ocp4_workload_lightspeed_demo_enable_rag | bool
+  kubernetes.core.k8s_json_patch:
+    api_version: ols.openshift.io/v1alpha1
+    kind: OLSConfig
+    name: cluster
+    patch:
+    - op: remove
+      path: /spec/ols/rag
+  failed_when: false
+
+# ================================
+# Remove RHEL9 VM
+# ================================
+
+- name: Remove demo VM
+  kubernetes.core.k8s:
+    state: absent
+    api_version: kubevirt.io/v1
+    kind: VirtualMachine
+    name: "{{ ocp4_workload_lightspeed_demo_vm_name }}"
+    namespace: "{{ ocp4_workload_lightspeed_demo_vm_namespace }}"
+
+- name: Remove demo namespace
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: Namespace
+    name: "{{ ocp4_workload_lightspeed_demo_vm_namespace }}"

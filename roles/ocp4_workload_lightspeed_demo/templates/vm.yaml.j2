@@ -2,23 +2,23 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: {{ ocp4_workload_rhel9_vm_name }}
-  namespace: {{ ocp4_workload_rhel9_vm_namespace }}
+  name: {{ ocp4_workload_lightspeed_demo_vm_name }}
+  namespace: {{ ocp4_workload_lightspeed_demo_vm_namespace }}
   labels:
     app: lightspeed-demo
     vm.kubevirt.io/template: rhel9-server-small
     vm.kubevirt.io/template.namespace: openshift
 spec:
-  running: {{ ocp4_workload_rhel9_vm_running }}
+  running: {{ ocp4_workload_lightspeed_demo_vm_running }}
   template:
     metadata:
       labels:
         app: lightspeed-demo
-        kubevirt.io/domain: {{ ocp4_workload_rhel9_vm_name }}
+        kubevirt.io/domain: {{ ocp4_workload_lightspeed_demo_vm_name }}
     spec:
       domain:
         cpu:
-          cores: {{ ocp4_workload_rhel9_vm_cpu_cores }}
+          cores: {{ ocp4_workload_lightspeed_demo_vm_cpu_cores }}
           sockets: 1
           threads: 1
         devices:
@@ -36,20 +36,20 @@ spec:
           type: pc-q35-rhel9.4.0
         resources:
           requests:
-            memory: {{ ocp4_workload_rhel9_vm_memory }}
+            memory: {{ ocp4_workload_lightspeed_demo_vm_memory }}
       networks:
       - name: default
         pod: {}
       volumes:
       - name: rootdisk
         containerDisk:
-          image: {{ ocp4_workload_rhel9_vm_image }}
+          image: {{ ocp4_workload_lightspeed_demo_vm_image }}
       - name: cloudinitdisk
         cloudInitNoCloud:
           userData: |
             #cloud-config
-            user: {{ ocp4_workload_rhel9_vm_user }}
-            password: {{ ocp4_workload_rhel9_vm_password }}
+            user: {{ ocp4_workload_lightspeed_demo_vm_user }}
+            password: {{ ocp4_workload_lightspeed_demo_vm_password }}
             chpasswd:
               expire: false
             ssh_pwauth: true

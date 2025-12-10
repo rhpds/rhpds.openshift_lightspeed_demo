@@ -1,0 +1,53 @@
+---
+# --------------------------------
+# OpenShift Lightspeed Demo Content
+# --------------------------------
+
+# OLS namespace (must match the namespace where OLS is installed)
+ocp4_workload_lightspeed_demo_ols_namespace: openshift-lightspeed
+
+# --------------------------------
+# RHEL9 VM Configuration
+# --------------------------------
+
+# Namespace for the demo VM
+ocp4_workload_lightspeed_demo_vm_namespace: lightspeed-demo
+
+# VM Configuration
+ocp4_workload_lightspeed_demo_vm_name: rhel9-demo
+ocp4_workload_lightspeed_demo_vm_running: true
+
+# Resources
+ocp4_workload_lightspeed_demo_vm_cpu_cores: 1
+ocp4_workload_lightspeed_demo_vm_memory: 2Gi
+ocp4_workload_lightspeed_demo_vm_disk_size: 30Gi
+
+# Image source
+ocp4_workload_lightspeed_demo_vm_image: quay.io/containerdisks/rhel:9-latest
+
+# Cloud-init user
+ocp4_workload_lightspeed_demo_vm_user: cloud-user
+ocp4_workload_lightspeed_demo_vm_password: redhat
+
+# --------------------------------
+# RAG Deployment Configuration
+# --------------------------------
+
+# Enable RAG integration for OLS
+ocp4_workload_lightspeed_demo_enable_rag: true
+
+# RAG container image (ACME BYOK demo content)
+ocp4_workload_lightspeed_demo_rag_image: 'quay.io/dialvare/acme-byok:latest'
+
+# --------------------------------
+# Broken Pod Configuration
+# --------------------------------
+
+# Create a broken pod for demo/troubleshooting scenarios
+ocp4_workload_lightspeed_demo_create_broken_pod: true
+
+# Namespace for the broken pod
+ocp4_workload_lightspeed_demo_broken_pod_namespace: broken
+
+# Broken pod name
+ocp4_workload_lightspeed_demo_broken_pod_name: broken-pod

@@ -1,0 +1,40 @@
+---
+# Patch OLSConfig to add RAG integration
+
+- name: Wait for OLSConfig to be created by OLS operator
+  kubernetes.core.k8s_info:
+    api_version: ols.openshift.io/v1alpha1
+    kind: OLSConfig
+    name: cluster
+  register: olsconfig_check
+  until: olsconfig_check.resources | length > 0
+  retries: 30
+  delay: 10
+
+- name: Patch OLSConfig with RAG configuration
+  kubernetes.core.k8s:
+    state: patched
+    api_version: ols.openshift.io/v1alpha1
+    kind: OLSConfig
+    name: cluster
+    definition:
+      spec:
+        ols:
+          rag:
+          - image: "{{ ocp4_workload_lightspeed_demo_rag_image }}"
+
+- name: Wait for OLS operator to process RAG configuration
+  ansible.builtin.pause:
+    seconds: 15
+    prompt: "Waiting for OLS operator to process RAG configuration"
+
+- name: Verify RAG configuration applied
+  kubernetes.core.k8s_info:
+    api_version: ols.openshift.io/v1alpha1
+    kind: OLSConfig
+    name: cluster
+  register: olsconfig_rag_verify
+
+- name: Display RAG configuration status
+  ansible.builtin.debug:
+    msg: "RAG image configured: {{ olsconfig_rag_verify.resources[0].spec.ols.rag | default('Not configured') }}"

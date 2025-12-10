@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: Prakhar Srivastava
-  description: Deploy a small RHEL 9 VM for OpenShift Lightspeed demos
+  description: OpenShift Lightspeed demo content (RHEL9 VM, RAG integration, broken pod)
   company: Red Hat
   license: Apache-2.0
   min_ansible_version: '2.9'
@@ -12,6 +12,8 @@ galaxy_info:
   galaxy_tags:
   - openshift
   - virtualization
+  - lightspeed
+  - rag
   - demo
 
 dependencies: []
