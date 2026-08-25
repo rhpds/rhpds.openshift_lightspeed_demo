@@ -1,6 +1,6 @@
 # ocp4_workload_lightspeed_demo
 
-Deploys demo content for OpenShift Lightspeed demonstrations including RHEL 9 VM, RAG integration, and intentionally broken pod for troubleshooting scenarios.
+Deploys demo content for OpenShift Lightspeed demonstrations including RHEL 9 VM, RAG integration, intentionally broken pod for troubleshooting scenarios, and optional Perses dashboards.
 
 ## Overview
 
@@ -20,6 +20,9 @@ Patches the OLSConfig with a RAG (Retrieval-Augmented Generation) image containi
 
 ### 3. Broken Pod
 Creates an intentionally misconfigured pod with a typo in the nodeSelector (`wrker` instead of `worker`). This is used for demonstration purposes to showcase Lightspeed's troubleshooting capabilities.
+
+### 4. Perses Dashboards (optional)
+Deploys a UIPlugin and PersesGlobalDatasource for Perses dashboard integration via the Cluster Observability Operator. Disabled by default — requires OCP 4.22+ and the Cluster Observability Operator to be installed separately.
 
 ## Dependencies
 
@@ -61,6 +64,11 @@ Creates an intentionally misconfigured pod with a typo in the nodeSelector (`wrk
 | `ocp4_workload_lightspeed_demo_broken_pod_namespace` | `broken` | Namespace for broken pod |
 | `ocp4_workload_lightspeed_demo_broken_pod_name` | `broken-pod` | Name of broken pod |
 
+### Perses Configuration
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ocp4_workload_lightspeed_demo_enable_perses` | `false` | Enable Perses dashboards (requires Cluster Observability Operator and OCP 4.22+) |
+
 ## Example Usage
 
 This workload is typically deployed as part of an AgnosticV catalog item:
@@ -73,6 +81,7 @@ workloads:
 # Configure demo content
 ocp4_workload_lightspeed_demo_enable_rag: true
 ocp4_workload_lightspeed_demo_create_broken_pod: true
+ocp4_workload_lightspeed_demo_enable_perses: false
 ```
 
 ## Author

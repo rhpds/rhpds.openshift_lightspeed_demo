@@ -62,3 +62,11 @@
 - name: Create broken pod for demo
   when: ocp4_workload_lightspeed_demo_create_broken_pod | bool
   ansible.builtin.include_tasks: deploy_broken_pod.yml
+
+# ================================
+# Perses Dashboards Deployment
+# ================================
+
+- name: Deploy Perses dashboards
+  when: ocp4_workload_lightspeed_demo_enable_perses | bool
+  ansible.builtin.include_tasks: deploy_perses.yml

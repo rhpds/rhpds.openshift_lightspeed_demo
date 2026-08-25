@@ -51,3 +51,10 @@ ocp4_workload_lightspeed_demo_broken_pod_namespace: broken
 
 # Broken pod name
 ocp4_workload_lightspeed_demo_broken_pod_name: broken-pod
+
+# --------------------------------
+# Perses Configuration
+# --------------------------------
+
+# Enable Perses dashboards (requires Cluster Observability Operator and OCP 4.22+)
+ocp4_workload_lightspeed_demo_enable_perses: false

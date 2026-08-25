@@ -29,6 +29,28 @@
   failed_when: false
 
 # ================================
+# Remove Perses Dashboards (if created)
+# ================================
+
+- name: Remove Perses UIPlugin
+  when: ocp4_workload_lightspeed_demo_enable_perses | bool
+  kubernetes.core.k8s:
+    state: absent
+    api_version: observability.openshift.io/v1alpha1
+    kind: UIPlugin
+    name: monitoring
+  failed_when: false
+
+- name: Remove Perses Global Datasource
+  when: ocp4_workload_lightspeed_demo_enable_perses | bool
+  kubernetes.core.k8s:
+    state: absent
+    api_version: perses.dev/v1alpha2
+    kind: PersesGlobalDatasource
+    name: thanos-querier-datasource
+  failed_when: false
+
+# ================================
 # Remove RHEL9 VM
 # ================================
 

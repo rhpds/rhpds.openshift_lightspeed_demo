@@ -4,7 +4,7 @@ Ansible collection for deploying demo workloads for OpenShift Lightspeed environ
 
 ## Roles
 
-- `ocp4_workload_rhel9_vm` - Deploys a small RHEL 9 virtual machine for demo purposes
+- `ocp4_workload_lightspeed_demo` - Deploys demo content for OpenShift Lightspeed (RHEL 9 VM, RAG, broken pod, optional Perses dashboards)
 
 ## Installation
 
@@ -16,5 +16,5 @@ ansible-galaxy collection install git+https://github.com/rhpds/rhpds.openshift_l
 
 ```yaml
 workloads:
-- rhpds.openshift_lightspeed_demo.ocp4_workload_rhel9_vm
+- rhpds.openshift_lightspeed_demo.ocp4_workload_lightspeed_demo
 ```
