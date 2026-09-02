@@ -1,5 +1,13 @@
 ---
 # ================================
+# Remove Agentic OLS (if deployed) — must run first
+# ================================
+
+- name: Remove Agentic OpenShift Lightspeed
+  when: ocp4_workload_lightspeed_demo_enable_agentic | bool
+  ansible.builtin.include_tasks: remove_agentic_ols.yml
+
+# ================================
 # Remove Broken Pod (if created)
 # ================================
 

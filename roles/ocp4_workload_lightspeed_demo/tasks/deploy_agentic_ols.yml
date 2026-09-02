@@ -1,0 +1,248 @@
+---
+# ================================
+# Agentic OLS Deployment
+# Runs quickstart scripts from the agentic operator repo in component order
+# so that individual sub-components can be toggled via feature flags.
+# ================================
+
+- name: Create temp directory for agentic operator repo clone
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: _agentic_ols
+  register: r_agentic_tmp
+
+- name: Clone agentic operator repo (shallow)
+  ansible.builtin.git:
+    repo: "{{ ocp4_workload_lightspeed_demo_agentic_repo_url }}"
+    version: "{{ ocp4_workload_lightspeed_demo_agentic_repo_version }}"
+    dest: "{{ r_agentic_tmp.path }}/repo"
+    depth: 1
+    single_branch: true
+
+# --------------------------------
+# Build optional flag strings
+# --------------------------------
+
+- name: Build OTEL deploy flags
+  ansible.builtin.set_fact:
+    _agentic_otel_flags: >-
+      {% if ocp4_workload_lightspeed_demo_agentic_otel_image != '' %}--image={{ ocp4_workload_lightspeed_demo_agentic_otel_image }}{% endif %}
+      {% if ocp4_workload_lightspeed_demo_agentic_enable_postgres | bool %}--postgres{% endif %}
+
+- name: Build configmap deploy flags
+  ansible.builtin.set_fact:
+    _agentic_configmap_flags: >-
+      {% if ocp4_workload_lightspeed_demo_agentic_sandbox_image != '' %}--sandbox-image={{ ocp4_workload_lightspeed_demo_agentic_sandbox_image }}{% endif %}
+
+- name: Build operator deploy flags
+  ansible.builtin.set_fact:
+    _agentic_operator_flags: >-
+      {% if ocp4_workload_lightspeed_demo_agentic_operator_image != '' %}--image={{ ocp4_workload_lightspeed_demo_agentic_operator_image }}{% endif %}
+
+- name: Build alerts adapter deploy flags
+  ansible.builtin.set_fact:
+    _agentic_alerts_adapter_flags: >-
+      {% if ocp4_workload_lightspeed_demo_agentic_alerts_adapter_image != '' %}--image={{ ocp4_workload_lightspeed_demo_agentic_alerts_adapter_image }}{% endif %}
+
+- name: Build console deploy flags
+  ansible.builtin.set_fact:
+    _agentic_console_flags: >-
+      {% if ocp4_workload_lightspeed_demo_agentic_console_image != '' %}--image={{ ocp4_workload_lightspeed_demo_agentic_console_image }}{% endif %}
+
+# --------------------------------
+# Pre-flight: release ConfigMap ownership from classic OLS operator
+# The classic OLS operator manages lightspeed-agentic-configuration via an
+# ownerReference, which blocks the agentic quickstart scripts from patching it.
+# --------------------------------
+
+- name: Scale down classic OLS operator to release ConfigMap ownership
+  ansible.builtin.shell:
+    cmd: >
+      oc scale deployment lightspeed-operator-controller-manager
+      --replicas=0 -n {{ ocp4_workload_lightspeed_demo_ols_namespace }}
+    executable: /bin/bash
+
+- name: Check if lightspeed-agentic-configuration ConfigMap already exists
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    name: lightspeed-agentic-configuration
+    namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+  register: r_agentic_configmap
+
+- name: Remove ownerReferences from lightspeed-agentic-configuration ConfigMap
+  when:
+    - r_agentic_configmap.resources | length > 0
+    - r_agentic_configmap.resources[0].metadata.ownerReferences is defined
+  kubernetes.core.k8s_json_patch:
+    api_version: v1
+    kind: ConfigMap
+    name: lightspeed-agentic-configuration
+    namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+    patch:
+      - op: remove
+        path: /metadata/ownerReferences
+
+# --------------------------------
+# Deploy components
+# --------------------------------
+
+- name: Deploy OTEL collector
+  ansible.builtin.shell:
+    cmd: "bash deploy-otel.sh {{ _agentic_otel_flags | trim }}"
+    chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+
+- name: Deploy agentic configuration ConfigMap
+  ansible.builtin.shell:
+    cmd: "bash deploy-configmap.sh {{ _agentic_configmap_flags | trim }}"
+    chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+
+- name: Deploy agentic operator
+  ansible.builtin.shell:
+    cmd: "bash deploy-operator.sh {{ _agentic_operator_flags | trim }}"
+    chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+
+- name: Deploy alerts adapter
+  when: ocp4_workload_lightspeed_demo_enable_agentic_alerts_adapter | bool
+  ansible.builtin.shell:
+    cmd: "bash deploy-alerts-adapter.sh {{ _agentic_alerts_adapter_flags | trim }}"
+    chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+
+- name: Deploy console plugin
+  when: ocp4_workload_lightspeed_demo_agentic_enable_console | bool
+  ansible.builtin.shell:
+    cmd: "bash deploy-console.sh {{ _agentic_console_flags | trim }}"
+    chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+
+# --------------------------------
+# LLM credentials — auto-discovered from cluster
+# Reads the Bearer token from the credentials secret
+# --------------------------------
+
+- name: Read credentials secret from cluster
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: credentials
+    namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+  register: r_credentials
+
+- name: Set Bearer token from credentials secret
+  ansible.builtin.set_fact:
+    _agentic_azure_bearer: "{{ r_credentials.resources[0].data.Bearer | b64decode }}"
+
+- name: Create llm-creds-openai secret with Bearer token
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: llm-creds-openai
+        namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+      type: Opaque
+      stringData:
+        OPENAI_API_KEY: "{{ _agentic_azure_bearer }}"
+
+- name: Apply LLMProvider CR
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: agentic.openshift.io/v1alpha1
+      kind: LLMProvider
+      metadata:
+        name: openai
+        namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+      spec:
+        type: OpenAI
+        openAI:
+          url: "{{ ocp4_workload_lightspeed_demo_agentic_azure_endpoint | regex_replace('/$', '') }}/openai/v1"
+          credentialsSecret:
+            name: llm-creds-openai
+
+- name: Apply Agent CR
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: agentic.openshift.io/v1alpha1
+      kind: Agent
+      metadata:
+        name: default
+        namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+      spec:
+        llmProvider:
+          name: openai
+        model: "{{ ocp4_workload_lightspeed_demo_agentic_model }}"
+        timeouts:
+          analysisSeconds: 120
+          executionSeconds: 120
+          verificationSeconds: 120
+
+- name: Submit namespace-inventory AgenticRun
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: agentic.openshift.io/v1alpha1
+      kind: AgenticRun
+      metadata:
+        name: namespace-inventory
+        namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+      spec:
+        request: |
+          Investigate what is running in the {{ ocp4_workload_lightspeed_demo_ols_namespace }} namespace.
+          List all pods, deployments, and services. Summarize each workload,
+          its current status, and flag any problems (CrashLoopBackOff,
+          ImagePullBackOff, Pending, restarts, etc.). Propose remediation
+          for any issues found.
+        targetNamespaces:
+          - "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+        analysis:
+          agent: default
+        execution:
+          agent: default
+
+# --------------------------------
+# Cleanup and user info
+# --------------------------------
+
+- name: Remove temp repo clone
+  ansible.builtin.file:
+    path: "{{ r_agentic_tmp.path }}"
+    state: absent
+
+- name: Set user info for Agentic OLS
+  agnosticd.core.agnosticd_user_info:
+    msg: |
+      Agentic OpenShift Lightspeed deployed successfully:
+        - Namespace: {{ ocp4_workload_lightspeed_demo_ols_namespace }}
+        - Azure endpoint: {{ ocp4_workload_lightspeed_demo_agentic_azure_endpoint }}
+        - Model (deployment): {{ ocp4_workload_lightspeed_demo_agentic_model }}
+        - Alerts Adapter: {{ ocp4_workload_lightspeed_demo_enable_agentic_alerts_adapter }}
+        - Console Plugin: {{ ocp4_workload_lightspeed_demo_agentic_enable_console }}
+
+      To submit a test run:
+        oc apply -f https://raw.githubusercontent.com/openshift/lightspeed-agentic-operator/main/hack/quickstart/examples/namespace-inventory.yaml
+
+      To watch run progress:
+        oc get agenticruns -n {{ ocp4_workload_lightspeed_demo_ols_namespace }} -w
+
+      Execution stage requires manual approval via AgenticRunApproval CR.
+    data:
+      agentic_ols_namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+      agentic_azure_endpoint: "{{ ocp4_workload_lightspeed_demo_agentic_azure_endpoint }}"
+      agentic_model: "{{ ocp4_workload_lightspeed_demo_agentic_model }}"

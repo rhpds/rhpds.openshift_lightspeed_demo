@@ -1,0 +1,82 @@
+---
+# ================================
+# Agentic OLS Teardown
+# Calls individual undeploy scripts rather than uninstall.sh to avoid
+# deleting the openshift-lightspeed namespace (shared with classic OLS).
+# ================================
+
+- name: Create temp directory for agentic operator repo clone
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: _agentic_ols_remove
+  register: r_agentic_remove_tmp
+
+- name: Clone agentic operator repo (shallow)
+  ansible.builtin.git:
+    repo: "{{ ocp4_workload_lightspeed_demo_agentic_repo_url }}"
+    version: "{{ ocp4_workload_lightspeed_demo_agentic_repo_version }}"
+    dest: "{{ r_agentic_remove_tmp.path }}/repo"
+    depth: 1
+    single_branch: true
+
+- name: Undeploy console plugin
+  when: ocp4_workload_lightspeed_demo_agentic_enable_console | bool
+  ansible.builtin.shell:
+    cmd: bash undeploy-console.sh
+    chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+
+- name: Undeploy operator (removes CRDs, CRs, RBAC, webhook)
+  ansible.builtin.shell:
+    cmd: bash undeploy-operator.sh
+    chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+
+- name: Undeploy configuration ConfigMap
+  ansible.builtin.shell:
+    cmd: bash undeploy-configmap.sh
+    chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+
+- name: Undeploy alerts adapter
+  when: ocp4_workload_lightspeed_demo_enable_agentic_alerts_adapter | bool
+  ansible.builtin.shell:
+    cmd: bash undeploy-alerts-adapter.sh
+    chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+
+- name: Undeploy OTEL collector
+  ansible.builtin.shell:
+    cmd: bash undeploy-otel.sh
+    chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+
+- name: Remove llm-creds-openai secret
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: Secret
+    name: llm-creds-openai
+    namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+
+- name: Scale classic OLS operator back up
+  ansible.builtin.shell:
+    cmd: >
+      oc scale deployment lightspeed-operator-controller-manager
+      --replicas=1 -n {{ ocp4_workload_lightspeed_demo_ols_namespace }}
+    executable: /bin/bash
+
+- name: Remove temp repo clone
+  ansible.builtin.file:
+    path: "{{ r_agentic_remove_tmp.path }}"
+    state: absent

@@ -51,3 +51,29 @@ ocp4_workload_lightspeed_demo_broken_pod_namespace: broken
 
 # Broken pod name
 ocp4_workload_lightspeed_demo_broken_pod_name: broken-pod
+
+# --------------------------------
+# Agentic OLS Configuration
+# --------------------------------
+
+# Master flag — disabled by default (pre-release feature, not yet on OperatorHub)
+ocp4_workload_lightspeed_demo_enable_agentic: false
+
+# Source repo for the quickstart scripts (shallow-cloned at deploy time)
+ocp4_workload_lightspeed_demo_agentic_repo_url: https://github.com/openshift/lightspeed-agentic-operator
+ocp4_workload_lightspeed_demo_agentic_repo_version: main
+
+# Sub-component flags (only apply when enable_agentic is true)
+ocp4_workload_lightspeed_demo_agentic_enable_postgres: false
+ocp4_workload_lightspeed_demo_enable_agentic_alerts_adapter: true
+ocp4_workload_lightspeed_demo_agentic_enable_console: true
+
+ocp4_workload_lightspeed_demo_agentic_model: gpt-5
+ocp4_workload_lightspeed_demo_agentic_azure_endpoint: https://llm-gpt4-lightspeed.cognitiveservices.azure.com
+
+# Optional image overrides — empty string means the deploy scripts use their Konflux :main defaults
+ocp4_workload_lightspeed_demo_agentic_operator_image: ""
+ocp4_workload_lightspeed_demo_agentic_sandbox_image: ""
+ocp4_workload_lightspeed_demo_agentic_console_image: ""
+ocp4_workload_lightspeed_demo_agentic_alerts_adapter_image: ""
+ocp4_workload_lightspeed_demo_agentic_otel_image: ""
