@@ -26,6 +26,7 @@
     chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Undeploy operator (removes CRDs, CRs, RBAC, webhook)
@@ -34,6 +35,7 @@
     chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Undeploy configuration ConfigMap
@@ -42,6 +44,7 @@
     chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Undeploy alerts adapter
@@ -51,6 +54,7 @@
     chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Undeploy OTEL collector
@@ -59,6 +63,7 @@
     chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Remove llm-creds-openai secret
@@ -75,6 +80,8 @@
       oc scale deployment lightspeed-operator-controller-manager
       --replicas=1 -n {{ ocp4_workload_lightspeed_demo_ols_namespace }}
     executable: /bin/bash
+  environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
 
 - name: Remove temp repo clone
   ansible.builtin.file:

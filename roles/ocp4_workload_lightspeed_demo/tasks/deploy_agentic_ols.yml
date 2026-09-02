@@ -61,6 +61,8 @@
       oc scale deployment lightspeed-operator-controller-manager
       --replicas=0 -n {{ ocp4_workload_lightspeed_demo_ols_namespace }}
     executable: /bin/bash
+  environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
 
 - name: Check if lightspeed-agentic-configuration ConfigMap already exists
   kubernetes.core.k8s_info:
@@ -93,6 +95,7 @@
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Deploy agentic configuration ConfigMap
@@ -101,6 +104,7 @@
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Deploy agentic operator
@@ -109,6 +113,7 @@
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Deploy alerts adapter
@@ -118,6 +123,7 @@
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Deploy console plugin
@@ -127,6 +133,7 @@
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
+    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 # --------------------------------
