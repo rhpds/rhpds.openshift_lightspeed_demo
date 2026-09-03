@@ -23,31 +23,13 @@
 # Build optional flag strings
 # --------------------------------
 
-- name: Build OTEL deploy flags
+- name: Build deploy flags
   ansible.builtin.set_fact:
-    _agentic_otel_flags: >-
-      {% if ocp4_workload_lightspeed_demo_agentic_otel_image != '' %}--image={{ ocp4_workload_lightspeed_demo_agentic_otel_image }}{% endif %}
-      {% if ocp4_workload_lightspeed_demo_agentic_enable_postgres | bool %}--postgres{% endif %}
-
-- name: Build configmap deploy flags
-  ansible.builtin.set_fact:
-    _agentic_configmap_flags: >-
-      {% if ocp4_workload_lightspeed_demo_agentic_sandbox_image != '' %}--sandbox-image={{ ocp4_workload_lightspeed_demo_agentic_sandbox_image }}{% endif %}
-
-- name: Build operator deploy flags
-  ansible.builtin.set_fact:
-    _agentic_operator_flags: >-
-      {% if ocp4_workload_lightspeed_demo_agentic_operator_image != '' %}--image={{ ocp4_workload_lightspeed_demo_agentic_operator_image }}{% endif %}
-
-- name: Build alerts adapter deploy flags
-  ansible.builtin.set_fact:
-    _agentic_alerts_adapter_flags: >-
-      {% if ocp4_workload_lightspeed_demo_agentic_alerts_adapter_image != '' %}--image={{ ocp4_workload_lightspeed_demo_agentic_alerts_adapter_image }}{% endif %}
-
-- name: Build console deploy flags
-  ansible.builtin.set_fact:
-    _agentic_console_flags: >-
-      {% if ocp4_workload_lightspeed_demo_agentic_console_image != '' %}--image={{ ocp4_workload_lightspeed_demo_agentic_console_image }}{% endif %}
+    _agentic_otel_flags: "{{ [('--image=' + ocp4_workload_lightspeed_demo_agentic_otel_image) if ocp4_workload_lightspeed_demo_agentic_otel_image else '', '--postgres' if ocp4_workload_lightspeed_demo_agentic_enable_postgres | bool else ''] | select | join(' ') }}"
+    _agentic_configmap_flags: "{{ ('--sandbox-image=' + ocp4_workload_lightspeed_demo_agentic_sandbox_image) if ocp4_workload_lightspeed_demo_agentic_sandbox_image else '' }}"
+    _agentic_operator_flags: "{{ ('--image=' + ocp4_workload_lightspeed_demo_agentic_operator_image) if ocp4_workload_lightspeed_demo_agentic_operator_image else '' }}"
+    _agentic_alerts_adapter_flags: "{{ ('--image=' + ocp4_workload_lightspeed_demo_agentic_alerts_adapter_image) if ocp4_workload_lightspeed_demo_agentic_alerts_adapter_image else '' }}"
+    _agentic_console_flags: "{{ ('--image=' + ocp4_workload_lightspeed_demo_agentic_console_image) if ocp4_workload_lightspeed_demo_agentic_console_image else '' }}"
 
 # --------------------------------
 # Pre-flight: release ConfigMap ownership from classic OLS operator
