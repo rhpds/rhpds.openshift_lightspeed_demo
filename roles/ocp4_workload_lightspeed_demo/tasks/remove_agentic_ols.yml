@@ -19,6 +19,14 @@
     depth: 1
     single_branch: true
 
+- name: Log in to OpenShift cluster for undeploy scripts
+  ansible.builtin.shell:
+    cmd: >
+      oc login {{ openshift_api_url }}
+      --token={{ openshift_api_key }}
+      --insecure-skip-tls-verify=true
+    executable: /bin/bash
+
 - name: Undeploy console plugin
   when: ocp4_workload_lightspeed_demo_agentic_enable_console | bool
   ansible.builtin.shell:
@@ -26,7 +34,6 @@
     chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Undeploy operator (removes CRDs, CRs, RBAC, webhook)
@@ -35,7 +42,6 @@
     chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Undeploy configuration ConfigMap
@@ -44,7 +50,6 @@
     chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Undeploy alerts adapter
@@ -54,7 +59,6 @@
     chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Undeploy OTEL collector
@@ -63,7 +67,6 @@
     chdir: "{{ r_agentic_remove_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Remove llm-creds-openai secret
@@ -75,13 +78,15 @@
     namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Scale classic OLS operator back up
-  ansible.builtin.shell:
-    cmd: >
-      oc scale deployment lightspeed-operator-controller-manager
-      --replicas=1 -n {{ ocp4_workload_lightspeed_demo_ols_namespace }}
-    executable: /bin/bash
-  environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
+  kubernetes.core.k8s:
+    api_version: apps/v1
+    kind: Deployment
+    name: lightspeed-operator-controller-manager
+    namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+    definition:
+      spec:
+        replicas: 1
+    merge_type: merge
 
 - name: Remove temp repo clone
   ansible.builtin.file:

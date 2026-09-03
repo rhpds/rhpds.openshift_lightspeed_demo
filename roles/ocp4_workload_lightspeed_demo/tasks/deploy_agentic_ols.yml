@@ -56,13 +56,15 @@
 # --------------------------------
 
 - name: Scale down classic OLS operator to release ConfigMap ownership
-  ansible.builtin.shell:
-    cmd: >
-      oc scale deployment lightspeed-operator-controller-manager
-      --replicas=0 -n {{ ocp4_workload_lightspeed_demo_ols_namespace }}
-    executable: /bin/bash
-  environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
+  kubernetes.core.k8s:
+    api_version: apps/v1
+    kind: Deployment
+    name: lightspeed-operator-controller-manager
+    namespace: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
+    definition:
+      spec:
+        replicas: 0
+    merge_type: merge
 
 - name: Check if lightspeed-agentic-configuration ConfigMap already exists
   kubernetes.core.k8s_info:
@@ -89,13 +91,20 @@
 # Deploy components
 # --------------------------------
 
+- name: Log in to OpenShift cluster for quickstart scripts
+  ansible.builtin.shell:
+    cmd: >
+      oc login {{ openshift_api_url }}
+      --token={{ openshift_api_key }}
+      --insecure-skip-tls-verify=true
+    executable: /bin/bash
+
 - name: Deploy OTEL collector
   ansible.builtin.shell:
     cmd: "bash deploy-otel.sh {{ _agentic_otel_flags | trim }}"
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Deploy agentic configuration ConfigMap
@@ -104,7 +113,6 @@
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Deploy agentic operator
@@ -113,7 +121,6 @@
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Deploy alerts adapter
@@ -123,7 +130,6 @@
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 - name: Deploy console plugin
@@ -133,7 +139,6 @@
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
-    KUBECONFIG: "{{ lookup('env', 'KUBECONFIG') }}"
     NAMESPACE: "{{ ocp4_workload_lightspeed_demo_ols_namespace }}"
 
 # --------------------------------
