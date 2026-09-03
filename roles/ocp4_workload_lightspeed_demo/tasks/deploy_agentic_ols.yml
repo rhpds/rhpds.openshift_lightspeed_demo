@@ -101,7 +101,7 @@
 
 - name: Deploy OTEL collector
   ansible.builtin.shell:
-    cmd: "bash deploy-otel.sh {{ _agentic_otel_flags | trim }}"
+    cmd: "bash deploy-otel.sh {{ _agentic_otel_flags | default('') | trim }}"
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
@@ -109,7 +109,7 @@
 
 - name: Deploy agentic configuration ConfigMap
   ansible.builtin.shell:
-    cmd: "bash deploy-configmap.sh {{ _agentic_configmap_flags | trim }}"
+    cmd: "bash deploy-configmap.sh {{ _agentic_configmap_flags | default('') | trim }}"
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
@@ -117,7 +117,7 @@
 
 - name: Deploy agentic operator
   ansible.builtin.shell:
-    cmd: "bash deploy-operator.sh {{ _agentic_operator_flags | trim }}"
+    cmd: "bash deploy-operator.sh {{ _agentic_operator_flags | default('') | trim }}"
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
@@ -126,7 +126,7 @@
 - name: Deploy alerts adapter
   when: ocp4_workload_lightspeed_demo_enable_agentic_alerts_adapter | bool
   ansible.builtin.shell:
-    cmd: "bash deploy-alerts-adapter.sh {{ _agentic_alerts_adapter_flags | trim }}"
+    cmd: "bash deploy-alerts-adapter.sh {{ _agentic_alerts_adapter_flags | default('') | trim }}"
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
@@ -135,7 +135,7 @@
 - name: Deploy console plugin
   when: ocp4_workload_lightspeed_demo_agentic_enable_console | bool
   ansible.builtin.shell:
-    cmd: "bash deploy-console.sh {{ _agentic_console_flags | trim }}"
+    cmd: "bash deploy-console.sh {{ _agentic_console_flags | default('') | trim }}"
     chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
     executable: /bin/bash
   environment:
