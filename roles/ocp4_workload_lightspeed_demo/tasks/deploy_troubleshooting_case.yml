@@ -1,0 +1,24 @@
+---
+- name: Create troubleshooting namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ ocp4_workload_lightspeed_demo_troubleshooting_namespace }}"
+    state: present
+    wait: true
+
+- name: Wait for default ServiceAccount to exist
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: ServiceAccount
+    name: default
+    namespace: "{{ ocp4_workload_lightspeed_demo_troubleshooting_namespace }}"
+  register: r_sa
+  until: r_sa.resources | length > 0
+  retries: 10
+  delay: 3
+
+- name: Deploy troubleshooting case resources
+  kubernetes.core.k8s:
+    template: deploy_troubleshooting_case.yaml.j2
+    wait: false
