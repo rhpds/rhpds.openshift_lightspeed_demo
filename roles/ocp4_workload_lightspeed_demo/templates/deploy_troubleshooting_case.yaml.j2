@@ -1,12 +1,4 @@
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: "{{ ocp4_workload_lightspeed_demo_troubleshooting_namespace }}"
-  labels:
-    app.kubernetes.io/name: critical-service
-    app.kubernetes.io/part-of: critical-system
----
 # Deployment with a failing init container simulating a broken dependency check.
 # The init container exits with code 1 on every attempt, keeping pods in
 # Init:CrashLoopBackOff. With 3 desired replicas and PDB minAvailable: 2,
