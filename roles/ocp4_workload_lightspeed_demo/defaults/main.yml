@@ -51,3 +51,14 @@ ocp4_workload_lightspeed_demo_broken_pod_namespace: broken
 
 # Broken pod name
 ocp4_workload_lightspeed_demo_broken_pod_name: broken-pod
+
+# --------------------------------
+# Troubleshooting Case Configuration
+# --------------------------------
+
+# Create a failing deployment + PDB to trigger PodDisruptionBudgetLimit alert
+# Requires alerting to be available. Enable when perses/monitoring is part of the demo.
+ocp4_workload_lightspeed_demo_create_troubleshooting_case: false
+
+# Namespace for the troubleshooting case
+ocp4_workload_lightspeed_demo_troubleshooting_namespace: critical
