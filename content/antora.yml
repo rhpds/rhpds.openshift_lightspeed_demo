@@ -1,0 +1,20 @@
+name: modules
+title: "Mastering OpenShift Lightspeed"
+version: master
+nav:
+  - modules/ROOT/nav.adoc
+
+asciidoc:
+  attributes:
+    # page-toclevels: -1               # <- This will remove the TOC that appear in the right sidebar at wider resolutions
+    lab_name: "Mastering OpenShift Lightspeed"
+    release-version: master
+    page-pagination: true # enables navigation at bottom of each instruction page.
+    my_var: "foo"
+    guid: my-guid
+    ssh_user: devops
+    ssh_password: devops
+    ssh_command: ssh someone@example.com
+    page-links:
+    - url: https://docs.redhat.com/en/documentation/red_hat_openshift_lightspeed/1.0/html/about/ols-about-openshift-lightspeed
+      text: OpenShift Lightspeed Documentation

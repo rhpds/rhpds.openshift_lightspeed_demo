@@ -1,20 +1,30 @@
-# OpenShift Lightspeed Demo Collection
+# OpenShift Lightspeed Demo
 
-Ansible collection for deploying demo workloads for OpenShift Lightspeed environments.
+Monorepo for the OpenShift Lightspeed demo catalog items.
 
-## Roles
+## Layout
 
-- `ocp4_workload_rhel9_vm` - Deploys a small RHEL 9 virtual machine for demo purposes
+- `automation/ansible/` — Ansible collection `rhpds.openshift_lightspeed_demo`
+  (workloads that deploy the demo resources)
+- `content/` — Showroom lab guide (Antora)
+- `byok/` — Markdown source documents for the Bring Your Own Knowledge (BYOK)
+  demo image
+- `utilities/` — Helper scripts to build and serve the guide locally
+- `site.yml` — Antora playbook for the showroom guide
+- `ui-config.yml` — Showroom UI configuration (tabs, view switcher)
 
-## Installation
+## Preview the guide
+
+A rendered preview is published to GitHub Pages on every push to `main`:
+https://rhpds.github.io/rhpds.openshift_lightspeed_demo/
+
+To build and serve locally:
 
 ```bash
-ansible-galaxy collection install git+https://github.com/rhpds/rhpds.openshift_lightspeed_demo.git
+utilities/lab-build
+utilities/lab-serve
 ```
 
-## Usage
+## Use the collection
 
-```yaml
-workloads:
-- rhpds.openshift_lightspeed_demo.ocp4_workload_rhel9_vm
-```
+See [automation/ansible/README.md](automation/ansible/README.md).

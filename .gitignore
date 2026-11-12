@@ -7,3 +7,8 @@ __pycache__/
 *~
 .vscode/
 .idea/
+
+# Antora build output
+www/
+.cache/
+node_modules/
