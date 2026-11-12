@@ -22,3 +22,9 @@ issues: https://github.com/rhpds/rhpds.openshift_lightspeed_demo/issues
 build_ignore:
 - .gitignore
 - .DS_Store
+- www/
+- .cache/
+- .github/
+- .images/
+- byok/
+- utilities/
